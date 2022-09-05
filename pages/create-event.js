@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { ethers } from "ethers";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
+import Alert from "../components/Alert";
+import connectContract from "../utils/connectContract";
+import getRandomImage from "../utils/getRandomImage";
 
 export default function CreateEvent() {
+  const { data: account } = useAccount();
+
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
@@ -11,13 +19,79 @@ export default function CreateEvent() {
   const [eventLink, setEventLink] = useState("");
   const [eventDescription, setEventDescription] = useState("");
 
+  const [success, setSuccess] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(null);
+  const [eventID, setEventID] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    console.log("Form submitted")
+
+    const body = {
+      name: eventName,
+      description: eventDescription,
+      link: eventLink,
+      image: getRandomImage(),
+    };
+
+    try {
+      const response = await fetch("/api/store-event-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (response.status !== 200) {
+        alert("Oops! Something went wrong. Please refresh and try again.");
+      } else {
+        console.log("Form successfully submitted!");
+        let responseJSON = await response.json();
+        await createEvent(responseJSON.cid);
+      }
+      // check response, if success is false, dont take them to success page
+    } catch (error) {
+      alert(
+        `Oops! Something went wrong. Please refresh and try again. Error ${error}`
+      );
+    }
   }
 
-  
+  const createEvent = async (cid) => {
+    try {
+      const rsvpContract = connectContract();
+
+      if (rsvpContract) {
+        let deposit = ethers.utils.parseEther(refund);
+        let eventDateAndTime = new Date(`${eventDate} ${eventTime}`);
+        let eventTimestamp = eventDateAndTime.getTime();
+        let eventDataCID = cid;
+
+        const txn = await rsvpContract.createNewEvent(
+          eventTimestamp,
+          deposit,
+          maxCapacity,
+          eventDataCID,
+          { gasLimit: 900000 }
+        );
+
+        setLoading(true);
+        console.log("Minting...", txn.hash);
+        let wait = await txn.wait();
+        console.log("Minted -- ", txn.hash);
+
+        setEventID(wait.events[0].args[0]);
+        setSuccess(true);
+        setLoading(false);
+        setMessage("Your event has been created successfully.");
+      } else {
+        console.log("Error getting contract.");
+      }
+    } catch (error) {
+      setSuccess(false);
+      setMessage(`There was an error creating your event: ${error.message}`);
+      setLoading(false);
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     // disable scroll on <input> elements of type number
@@ -31,19 +105,43 @@ export default function CreateEvent() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <Head>
-        <title>Create your event | web3rsvp</title>
+        <title>Crea tu evento | METSO Fun</title>
         <meta
           name="description"
           content="Create your virtual event on the blockchain"
         />
       </Head>
       <section className="relative py-12">
-    
+        {loading && (
+          <Alert
+            alertType={"loading"}
+            alertBody={"Please wait"}
+            triggerAlert={true}
+            color={"white"}
+          />
+        )}
+        {success && (
+          <Alert
+            alertType={"success"}
+            alertBody={message}
+            triggerAlert={true}
+            color={"palegreen"}
+          />
+        )}
+        {success === false && (
+          <Alert
+            alertType={"failed"}
+            alertBody={message}
+            triggerAlert={true}
+            color={"palevioletred"}
+          />
+        )}
+        {!success && (
           <h1 className="text-3xl tracking-tight font-extrabold text-gray-900 sm:text-4xl md:text-5xl mb-4">
-            Create your virtual event
+            Crea tu evento
           </h1>
-        
-     
+        )}
+        {account && !success && (
           <form
             onSubmit={handleSubmit}
             className="space-y-8 divide-y divide-gray-200"
@@ -54,7 +152,7 @@ export default function CreateEvent() {
                   htmlFor="eventname"
                   className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                 >
-                  Event name
+                  Nombre del evento
                 </label>
                 <div className="mt-1 sm:mt-0 sm:col-span-2">
                   <input
@@ -74,9 +172,9 @@ export default function CreateEvent() {
                   htmlFor="date"
                   className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                 >
-                  Date & time
+                  Fecha & hora
                   <p className="mt-1 max-w-2xl text-sm text-gray-400">
-                    Your event date and time
+                    La fecha de tu evento
                   </p>
                 </label>
                 <div className="mt-1 sm:mt-0 flex flex-wrap sm:flex-nowrap gap-2">
@@ -110,9 +208,9 @@ export default function CreateEvent() {
                   htmlFor="max-capacity"
                   className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                 >
-                  Max capacity
+                  Capacidad máxima
                   <p className="mt-1 max-w-2xl text-sm text-gray-400">
-                    Limit the number of spots available for your event.
+                    Limita el número de espacios disponibles para tu evento
                   </p>
                 </label>
                 <div className="mt-1 sm:mt-0 sm:col-span-2">
@@ -134,10 +232,9 @@ export default function CreateEvent() {
                   htmlFor="refundable-deposit"
                   className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                 >
-                  Refundable deposit
+                  Precio
                   <p className="mt-1 max-w-2xl text-sm text-gray-400">
-                    Require a refundable deposit (in MATIC) to reserve one spot
-                    at your event
+                    En MATIC
                   </p>
                 </label>
                 <div className="mt-1 sm:mt-0 sm:col-span-2">
@@ -161,10 +258,8 @@ export default function CreateEvent() {
                   htmlFor="event-link"
                   className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                 >
-                  Event link
-                  <p className="mt-1 max-w-2xl text-sm text-gray-400">
-                    The link for your virtual event
-                  </p>
+                  Link al evento
+
                 </label>
                 <div className="mt-1 sm:mt-0 sm:col-span-2">
                   <input
@@ -185,7 +280,7 @@ export default function CreateEvent() {
                 >
                   Event description
                   <p className="mt-2 text-sm text-gray-400">
-                    Let people know what your event is about!
+                    Haz que la gente sepa de qué irá tu evento
                   </p>
                 </label>
                 <div className="mt-1 sm:mt-0 sm:col-span-2">
@@ -216,12 +311,21 @@ export default function CreateEvent() {
               </div>
             </div>
           </form>
-        
-
-          {/* <section className="flex flex-col items-start py-8">
+        )}
+        {success && eventID && (
+          <div>
+            Success! Please wait a few minutes, then check out your event page{" "}
+            <span className="font-bold">
+              <Link href={`/event/${eventID}`}>here</Link>
+            </span>
+          </div>
+        )}
+        {!account && (
+          <section className="flex flex-col items-start py-8">
             <p className="mb-4">Please connect your wallet to create events.</p>
-          </section> */}
-
+            <ConnectButton />
+          </section>
+        )}
       </section>
     </div>
   );

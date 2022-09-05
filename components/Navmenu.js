@@ -31,7 +31,7 @@ export default function Navmenu({ account, disconnect }) {
                     "block px-4 py-2 text-sm"
                   )}
                 >
-                  My RSVPs
+                  Mis inscripciones
                 </a>
               )}
             </Menu.Item>
@@ -44,7 +44,7 @@ export default function Navmenu({ account, disconnect }) {
                     "block px-4 py-2 text-sm"
                   )}
                 >
-                  My Events
+                  Mis eventos
                 </a>
               )}
             </Menu.Item>
@@ -57,7 +57,7 @@ export default function Navmenu({ account, disconnect }) {
                     "block px-4 py-2 text-sm cursor-pointer"
                   )}
                 >
-                  Log Out
+                  Desconectar
                 </a>
               )}
             </Menu.Item>

@@ -15,12 +15,12 @@ export default function Dashboard({ page, isUpcoming, children }) {
 
   let tabs = [
     {
-      name: "Upcoming",
+      name: "Futuras",
       href: `/my-${page}/upcoming`,
       current: isUpcoming,
     },
     {
-      name: "Past",
+      name: "Pasadas",
       href: `/my-${page}/past`,
       current: !isUpcoming,
     },
@@ -29,18 +29,18 @@ export default function Dashboard({ page, isUpcoming, children }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Head>
-        <title>My Dashboard | web3rsvp</title>
+        <title>Mi espacio | METSO Fun</title>
         <meta name="description" content="Manage your events and RSVPs" />
       </Head>
       <div className="flex flex-wrap py-8">
         <DashboardNav page={page} />
         <div className="sm:w-10/12 sm:pl-8">
           <h1 className="text-2xl tracking-tight font-extrabold text-gray-900 sm:text-3xl md:text-4xl mb-4">
-            {page == "events" ? "My Events" : "My RSVPs"}
+            {page == "events" ? "Mis Eventos" : "Mis Inscipciones"}
           </h1>
           <div className="sm:hidden">
             <label htmlFor="tabs" className="sr-only">
-              Select a tab
+              Selecciona una ventana
             </label>
             <select
               id="tabs"

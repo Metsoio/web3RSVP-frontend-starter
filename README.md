@@ -19,3 +19,4 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+"# Metso-Fun"  git init git add README.md git commit -m "first commit" git branch -M main git remote add origin https://github.com/Metsoio/Metso-Fun.git git push -u origin main
