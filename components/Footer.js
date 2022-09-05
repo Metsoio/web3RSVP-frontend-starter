@@ -10,7 +10,7 @@ export default function Footer() {
             METSO Fun
           </a>
 
-          <a href="https://twitter.com/metso_io" target="_blank" className="text-gray-400 hover:text-gray-500">
+          <a href="https://twitter.com/metso_io" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-500">
             <span className="sr-only">Twitter</span>
             <svg
               className="h-6 w-6"
